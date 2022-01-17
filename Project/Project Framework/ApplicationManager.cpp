@@ -1,6 +1,9 @@
 #include "ApplicationManager.h"
 #include "Actions\ActionAddSquare.h"
-
+#include "Actions\ActionDrawColor.h"
+#include "Actions\ActionFillColors.h"
+#include "Actions\ActionBGColor.h"
+#include "Actions\ActionSelectFigure.h"
 
 //Constructor
 ApplicationManager::ApplicationManager()
@@ -9,10 +12,16 @@ ApplicationManager::ApplicationManager()
 	pGUI = new GUI;	
 	
 	FigCount = 0;
-		
+	clipboardCount = 0;
+
 	//Create an array of figure pointers and set them to NULL		
-	for(int i=0; i<MaxFigCount; i++)
-		FigList[i] = NULL;	
+	for (int i = 0; i < MaxFigCount; i++) {
+		FigList[i] = NULL;
+		SelectedFigs[i] = NULL;
+		Clipboard[i] = NULL;
+	}
+	selectedCount = 0;
+
 }
 
 void ApplicationManager::Run()
@@ -57,6 +66,25 @@ Action* ApplicationManager::CreateAction(ActionType ActType)
 
 			break;
 
+		case CHNG_DRAW_CLR:
+			pGUI->CreateColorToolBar();
+			newAct = new ActionDrawColor(this);
+			break;
+
+		case CHNG_FILL_CLR:
+			pGUI->CreateColorToolBar();
+			newAct = new ActionFillColors(this);
+			break;
+
+		case CHNG_BK_CLR:
+			pGUI->CreateColorToolBar();
+			newAct = new ActionBGColor(this);
+			break;
+
+		case SELECT_FIGURE:
+			newAct = new ActionSelectFigure(this);
+			break;
+
 		case EXIT:
 			///create ExitAction here
 			
@@ -87,20 +115,77 @@ void ApplicationManager::ExecuteAction(Action* &pAct)
 //Add a figure to the list of figures
 void ApplicationManager::AddFigure(CFigure* pFig)
 {
-	if(FigCount < MaxFigCount )
-		FigList[FigCount++] = pFig;	
+	if (FigCount < MaxFigCount) {
+		//FigList[FigCount++] = pFig;
+		FigList[FigCount] = pFig;
+		FigList[FigCount]->SetID(FigCount);
+		FigCount++;
+
+	}
+}
+////////////////////////////////////////////////////////////////////////////////////
+//get number of figures 
+int ApplicationManager::getFigCount() const
+{
+	return FigCount;
 }
 ////////////////////////////////////////////////////////////////////////////////////
 CFigure *ApplicationManager::GetFigure(int x, int y) const
 {
 	//If a figure is found return a pointer to it.
 	//if this point (x,y) does not belong to any figure return NULL
+	//Add your code here to search for a figure given a point x,y	
 
-
-	///Add your code here to search for a figure given a point x,y	
-
+	for (int i = FigCount - 1; i >= 0; i--) {
+			if (FigList[i]->PointOnFig(x, y))
+				return FigList[i];
+	}
 	return NULL;
 }
+
+
+//==================================================================================//
+//							Select Functions										//
+//==================================================================================//
+
+//Returns the number of selected figures
+int ApplicationManager::GetSelectedCount() const {
+	return selectedCount;
+}
+////////////////////////////////////////////////////////////////////////////////////
+//Returns a pointer to SelectedFigs array
+CFigure* const* ApplicationManager::GetSelectedFigures() const {
+	return SelectedFigs;
+}
+///////////////////////////////////////////////////////////////////////////////////
+//Adds a figure to the SelectedFigs array
+void ApplicationManager::AddSelectedFigure(CFigure* sf) {
+
+	SelectedFigs[selectedCount] = sf;
+	selectedCount++;
+}
+////////////////////////////////////////////////////////////////////////////////////
+//Removes a figure from the SelectedFigs array
+void ApplicationManager::RemoveSelectedFigure(CFigure* sf) {
+
+	for (int i = 0; i < selectedCount; i++) {
+		if (SelectedFigs[i] == sf) {
+			SelectedFigs[i] = SelectedFigs[selectedCount - 1];
+			SelectedFigs[selectedCount - 1] = NULL;
+			selectedCount--;
+			return;
+		}
+	}
+}
+
+void ApplicationManager::ClearSelectedFigs() {
+	for (int i = 0; i < selectedCount; i++)
+	{
+		SelectedFigs[i] = NULL;
+	}
+	selectedCount = 0;
+}
+
 //==================================================================================//
 //							Interface Management Functions							//
 //==================================================================================//

@@ -16,7 +16,7 @@ GUI::GUI()
 	UI.ToolBarHeight = 50;
 	UI.MenuItemWidth = 80;
 	
-	UI.DrawColor = BLUE;	//Drawing color
+	UI.DrawColor = BLACK;	//Drawing color
 	UI.FillColor = GREEN;	//Filling color
 	UI.MsgColor = RED;		//Messages color
 	UI.BkGrndColor = LIGHTGOLDENRODYELLOW;	//Background color
@@ -24,6 +24,7 @@ GUI::GUI()
 	UI.StatusBarColor = TURQUOISE;
 	UI.PenWidth = 3;	//width of the figures frames
 
+	UI.isFilled = false;
 	
 	//Create the output window
 	pWind = CreateWind(UI.width, UI.height, UI.wx, UI.wy);
@@ -86,6 +87,12 @@ ActionType GUI::MapInputToActionType() const
 			{
 			case ITM_SQUR: return DRAW_SQUARE;
 			case ITM_ELPS: return DRAW_ELPS;
+			case DRAW_CLR: return CHNG_DRAW_CLR;
+			case FILL_CLR: return CHNG_FILL_CLR;
+			case BKGRND_CLR: return CHNG_BK_CLR;
+			//case ITM_SELECT: return SELECT_FIGURE;
+
+
 			case ITM_EXIT: return EXIT;	
 			
 			default: return EMPTY;	//A click on empty place in desgin toolbar
@@ -95,7 +102,9 @@ ActionType GUI::MapInputToActionType() const
 		//[2] User clicks on the drawing area
 		if ( y >= UI.ToolBarHeight && y < UI.height - UI.StatusBarHeight)
 		{
-			return DRAWING_AREA;	
+			return SELECT_FIGURE;
+
+			//return DRAWING_AREA;	
 		}
 		
 		//[3] User clicks on the status bar
@@ -123,6 +132,18 @@ window* GUI::CreateWind(int w, int h, int x, int y) const
 	return pW;
 }
 //////////////////////////////////////////////////////////////////////////////////////////
+
+
+void GUI::ChangeBGColor(color backgroundcolor)
+{
+	
+	UI.BkGrndColor = backgroundcolor;
+	pWind->SetBrush(UI.BkGrndColor);
+	pWind->DrawRectangle(0, UI.ToolBarHeight, UI.width, UI.height);
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////
+
 void GUI::CreateStatusBar() const
 {
 	pWind->SetPen(UI.StatusBarColor, 1);
@@ -138,9 +159,12 @@ void GUI::ClearStatusBar() const
 	pWind->DrawRectangle(0, UI.height - UI.StatusBarHeight, UI.width, UI.height);
 }
 //////////////////////////////////////////////////////////////////////////////////////////
+
+/////////////////////////////////////////////////////////////
 void GUI::CreateDrawToolBar() const
 {
 	UI.InterfaceMode = MODE_DRAW;
+	//ClearToolBar();
 
 	//You can draw the tool bar icons in any way you want.
 	//Below is one possible way
@@ -151,6 +175,10 @@ void GUI::CreateDrawToolBar() const
 	string MenuItemImages[DRAW_ITM_COUNT];
 	MenuItemImages[ITM_SQUR] = "images\\MenuItems\\Menu_Sqr.jpg";
 	MenuItemImages[ITM_ELPS] = "images\\MenuItems\\Menu_Elps.jpg";
+	MenuItemImages[DRAW_CLR] = "images\\MenuItems\\draw.jpg";
+	MenuItemImages[FILL_CLR] = "images\\MenuItems\\fill.jpg";
+	MenuItemImages[BKGRND_CLR] = "images\\MenuItems\\bkgrnd.jpg";
+	//MenuItemImages[ITM_SELECT] = "images\\MenuItems\\select.jpg";
 	MenuItemImages[ITM_EXIT] = "images\\MenuItems\\Menu_Exit.jpg";
 
 	//TODO: Prepare images for each menu item and add it to the list
@@ -167,6 +195,50 @@ void GUI::CreateDrawToolBar() const
 
 }
 //////////////////////////////////////////////////////////////////////////////////////////
+
+void GUI::CreateColorToolBar() const
+{
+	string MenuItemImages[COLOR_ITM_COUNT];
+
+	MenuItemImages[ITM_GREEN] = "images\\MenuItems\\green.jpeg";
+	MenuItemImages[ITM_BLUE] = "images\\MenuItems\\blue.jpeg";
+	MenuItemImages[ITM_RED] = "images\\MenuItems\\red.jpeg";
+	MenuItemImages[ITM_YELLOW] = "images\\MenuItems\\yellow.jpeg";
+	MenuItemImages[ITM_NOFILL] = "images\\MenuItems\\none.jpg";
+
+
+	//Add Colors to the toolbar
+	for (int i = 0; i < COLOR_ITM_COUNT; i++)
+		pWind->DrawImage(MenuItemImages[i], i * UI.MenuItemWidth, UI.ToolBarHeight, UI.MenuItemWidth, UI.ToolBarHeight);
+	//Draw a line under the toolbar
+	pWind->SetPen(RED, 3);
+	pWind->DrawLine(0, UI.ToolBarHeight + UI.ToolBarHeight, UI.width, UI.ToolBarHeight + UI.ToolBarHeight);
+}
+//////////////////////////////////////////////////////////////////////////////////////////
+
+void GUI::ClearColorsToolBar() const
+{
+	pWind->SetPen(UI.BkGrndColor, 1);
+	pWind->SetBrush(UI.BkGrndColor);
+	pWind->DrawRectangle(0, UI.ToolBarHeight, UI.width, UI.height - UI.StatusBarHeight);
+
+}
+//////////////////////////////////////////////////////////////////////////////////////////
+
+void GUI::setCrntFillColor(color clr) const	//set current drwawing color
+{
+	UI.FillColor = clr;
+}
+////////////////////////////////
+void GUI::setIsFilled(bool isF) const
+{
+	UI.isFilled = isF;
+}
+//////////////////////////////////
+bool GUI::getIsFilled() const
+{
+	return UI.isFilled;
+}
 
 void GUI::CreatePlayToolBar() const
 {
@@ -193,6 +265,11 @@ void GUI::PrintMessage(string msg) const	//Prints a message on status bar
 	pWind->DrawString(10, UI.height - (int)(UI.StatusBarHeight/1.5), msg);
 }
 //////////////////////////////////////////////////////////////////////////////////////////
+
+void GUI::setCrntDrawColor(color clr) const	//set current drwawing color
+{
+	UI.DrawColor = clr;
+}
 
 color GUI::getCrntDrawColor() const	//get current drwawing color
 {	return UI.DrawColor;	}
@@ -228,10 +305,8 @@ void GUI::DrawSquare(Point P1, int length, GfxInfo RectGfxInfo, bool selected) c
 	else	
 		style = FRAME;
 
-	
 	pWind->DrawRectangle(P1.x, P1.y, P1.x +length, P1.y+length, style);
 	pWind->DrawLine(P1.x, P1.y, P1.x + length, P1.y + length, style);
-
 }
 
 

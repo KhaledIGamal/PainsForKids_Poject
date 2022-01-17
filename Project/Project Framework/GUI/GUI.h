@@ -28,7 +28,7 @@ public:
 	void CreateDrawToolBar() const;	//creates Draw mode toolbar & menu
 	void CreatePlayToolBar() const;	//creates Play mode toolbar & menu
 	void CreateStatusBar() const;	//create the status bar
-
+	////////
 	void ClearStatusBar() const;	//Clears the status bar
 	void ClearDrawArea() const;	//Clears the drawing area
 	
@@ -39,9 +39,23 @@ public:
 	
 	void PrintMessage(string msg) const;	//Print a message on Status bar
 
+	// DRAW COLOR FUNCTIONS
+	void setCrntDrawColor(color clr) const;
 	color getCrntDrawColor() const;	//get current drwawing color
 	color getCrntFillColor() const;	//get current filling color
-	int getCrntPenWidth() const;		//get current pen width
+
+	int getCrntPenWidth() const;	//get current pen width
+
+
+	// FILL FUNCTIONS
+	void setCrntFillColor(color clr) const;
+	void setIsFilled(bool isF) const;
+	bool getIsFilled() const;
+
+	// COLOR FUNCTIONS
+	void ChangeBGColor(color backgroundcolor);
+	void CreateColorToolBar() const;
+	void ClearColorsToolBar() const;
 
 
 };
